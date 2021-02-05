@@ -80,8 +80,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
 
         @Override
         public void onClick(View v) {
-            itemListener.recyclerViewListClicked(v, this.getLayoutPosition());
-            System.out.println("CLICKED POS = " + getLayoutPosition());
+            itemListener.recyclerViewListClicked(link, v, this.getLayoutPosition());
         }
     }
 }

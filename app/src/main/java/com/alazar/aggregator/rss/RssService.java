@@ -55,7 +55,6 @@ public class RssService {
                 new TikXml.Builder()
                     .exceptionOnUnreadXml(false)
                     .addTypeConverter(String.class, new HtmlEscapeStringConverter())
-                    //.addTypeAdapter()
                     .build()
             ))
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create());
@@ -88,8 +87,7 @@ public class RssService {
                 Log.d(TAG, "NEWS LIST SIZE === " + newsList.size());
                 callback.onReady(newsList);
             })
-            .subscribe(this::handleResult, Throwable::printStackTrace)
-        ;
+            .subscribe(this::handleResult, Throwable::printStackTrace);
     }
 
     public void handleResult(RssFeed rssFeed) {
