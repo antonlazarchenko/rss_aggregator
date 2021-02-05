@@ -1,49 +1,33 @@
 package com.alazar.aggregator;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.View;
 
-import com.alazar.aggregator.adapter.NewsAdapter;
-import com.alazar.aggregator.adapter.RecyclerViewClickListener;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.alazar.aggregator.databinding.ActivityMainBinding;
-import com.alazar.aggregator.rss.RssService;
+import com.alazar.aggregator.screen.FeedFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewClickListener {
-
-    private ActivityMainBinding binding;
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         checkAndRequestPermissions(Manifest.permission.INTERNET);
 
-        RecyclerView recyclerView = binding.recyclerView;
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(linearLayoutManager);
-
-        NewsAdapter adapter = new NewsAdapter(this);
-        recyclerView.setAdapter(adapter);
-
-        RssService.getInstance().getFeed(newsList -> {
-            System.out.println("SIZE ----- " + newsList.size());
-            adapter.setItems(newsList);
-        });
-
+        getSupportFragmentManager()
+            .beginTransaction()
+            .replace(binding.frameLayout.getId(), new FeedFragment())
+            .commit();
     }
 
 
@@ -57,13 +41,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewClick
         }
 
         if (!listPermissionsNeeded.isEmpty()) {
+            //noinspection ToArrayCallWithZeroLengthArrayArgument
             ActivityCompat.requestPermissions(
                 this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 123);
         }
-    }
-
-    @Override
-    public void recyclerViewListClicked(View v, int position) {
-
     }
 }

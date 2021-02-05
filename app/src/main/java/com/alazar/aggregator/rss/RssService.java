@@ -1,5 +1,7 @@
 package com.alazar.aggregator.rss;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.alazar.aggregator.model.NewsItem;
@@ -26,6 +28,8 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 
 public class RssService {
+
+    private static final String TAG = "FeedPresenter";
 
     private static RssService instance;
 
@@ -80,7 +84,10 @@ public class RssService {
         getSourcesUrl().subscribeOn(Schedulers.io())
             .flatMap(Observable::fromIterable)
             .flatMap(url -> rssService.getFeed(url).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()))
-            .doFinally(() -> callback.onReady(newsList))
+            .doFinally(() -> {
+                Log.d(TAG, "NEWS LIST SIZE === " + newsList.size());
+                callback.onReady(newsList);
+            })
             .subscribe(this::handleResult, Throwable::printStackTrace)
         ;
     }
