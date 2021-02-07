@@ -1,9 +1,7 @@
 package com.alazar.aggregator.screen;
 
-import android.util.Log;
-
+import com.alazar.aggregator.rss.ContentProvider;
 import com.alazar.aggregator.rss.RssCallback;
-import com.alazar.aggregator.rss.RssService;
 
 import javax.inject.Inject;
 
@@ -11,13 +9,17 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private FeedMvpContract.View view;
 
+    ContentProvider provider;
+
     @Inject
-    public FeedPresenter() {}
+    public FeedPresenter(ContentProvider provider) {
+        this.provider = provider;
+    }
 
 
     @Override
     public void getFeed(RssCallback callback) {
-        RssService.getInstance().getFeed(callback::onReady);
+        provider.getFeed(callback);
     }
 
 

@@ -27,24 +27,15 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 
-public class RssService {
+public class RssService implements ContentProvider {
 
     private static final String TAG = "FeedPresenter";
-
-    private static RssService instance;
-
-    public static RssService getInstance() {
-        if (instance == null) {
-            instance = new RssService();
-        }
-        return instance;
-    }
 
     private final IRssService rssService;
 
     private List<NewsItem> newsList;
 
-    private RssService() {
+    public RssService() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor()
             .setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
@@ -67,7 +58,7 @@ public class RssService {
     }
 
 
-    public Observable<List<String>> getSourcesUrl() {
+    private Observable<List<String>> getSourcesUrl() {
         return Observable.fromArray(
             new ArrayList<>(Arrays.asList(
                 "https://habr.com/ru/rss/best/daily/?fl=ru/feed",
@@ -90,7 +81,7 @@ public class RssService {
             .subscribe(this::handleResult, Throwable::printStackTrace);
     }
 
-    public void handleResult(RssFeed rssFeed) {
+    private void handleResult(RssFeed rssFeed) {
         for (RssItem item : rssFeed.channel.item) {
             newsList.add(new NewsItem(item.getTitle(), item.getDate(), item.getLink(), item.getDescription()));
         }
