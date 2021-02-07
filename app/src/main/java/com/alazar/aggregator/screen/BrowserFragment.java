@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -33,6 +34,7 @@ public class BrowserFragment extends Fragment {
         Bundle bundle = requireArguments();
 
         WebView webView = binding.webView;
+        webView.setWebViewClient(new WebViewClient());
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl(bundle.getString("link"));
 
