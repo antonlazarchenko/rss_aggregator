@@ -1,7 +1,6 @@
 package com.alazar.aggregator.screen;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.alazar.aggregator.R;
 import com.alazar.aggregator.adapter.NewsAdapter;
 import com.alazar.aggregator.adapter.RecyclerViewClickListener;
 import com.alazar.aggregator.databinding.FragmentFeedBinding;
 import com.alazar.aggregator.di.App;
-import com.alazar.aggregator.model.NewsItem;
 
 import javax.inject.Inject;
 
@@ -24,6 +23,10 @@ import javax.inject.Inject;
 public class FeedFragment extends Fragment implements FeedMvpContract.View, RecyclerViewClickListener {
 
     private FragmentFeedBinding binding;
+
+    private NewsAdapter adapter;
+
+    private SwipeRefreshLayout swipeRefresh;
 
     @Inject
     FeedMvpContract.Presenter<FeedMvpContract.View> presenter;
@@ -51,15 +54,25 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        NewsAdapter adapter = new NewsAdapter(this);
+        adapter = new NewsAdapter(this);
         recyclerView.setAdapter(adapter);
 
-        presenter.getFeed(news -> {
-            hideProgressBar();
-            adapter.setItems(news);
-        });
+        swipeRefresh = binding.swipeRefresh;
+        swipeRefresh.setColorSchemeResources(R.color.purple_500);
+        swipeRefresh.setOnRefreshListener(this::updateContent);
+
+        updateContent();
 
         return binding.getRoot();
+    }
+
+
+    public void updateContent() {
+        presenter.getFeed(news -> {
+            hideProgressBar();
+            swipeRefresh.setRefreshing(false);
+            adapter.setItems(news);
+        });
     }
 
 
