@@ -1,7 +1,10 @@
 package com.alazar.aggregator.screen;
 
-import com.alazar.aggregator.rss.ContentProvider;
-import com.alazar.aggregator.rss.RssCallback;
+import com.alazar.aggregator.base.ContentProvider;
+import com.alazar.aggregator.base.DbProvider;
+import com.alazar.aggregator.base.NewsListCallback;
+import com.alazar.aggregator.db.DbHandler;
+import com.alazar.aggregator.util.NetworkWrapper;
 
 import javax.inject.Inject;
 
@@ -9,17 +12,27 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private FeedMvpContract.View view;
 
-    ContentProvider provider;
+    private ContentProvider contentProvider;
+
+    private DbProvider dbProvider;
 
     @Inject
-    public FeedPresenter(ContentProvider provider) {
-        this.provider = provider;
+    public FeedPresenter(ContentProvider contentProvider, DbProvider dbProvider) {
+        this.contentProvider = contentProvider;
+        this.dbProvider = dbProvider;
     }
 
 
     @Override
-    public void getFeed(RssCallback callback) {
-        provider.getFeed(callback);
+    public void getFeed(NewsListCallback callback) {
+        if (NetworkWrapper.getInstance().isConnected()) {
+            contentProvider.getFeed(news -> {
+                dbProvider.saveFreshNewsList(news);
+                callback.onReady(news);
+            });
+        } else {
+            dbProvider.findAllNewsItems(callback);
+        }
     }
 
 

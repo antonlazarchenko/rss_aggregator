@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Digital Gazette</string>
+    <string name="request_enable_wifi">This app requires internet connection. Please, enable it.</string>
+    <string name="enable">Enable</string>
+    <string name="cancel">Cancel</string>
+    <string name="internet_lost">Oops, internet lost.</string>
+    <string name="internet_unavaiable">Oops, internet unavailable. Please enable permissions.</string>
 </resources>

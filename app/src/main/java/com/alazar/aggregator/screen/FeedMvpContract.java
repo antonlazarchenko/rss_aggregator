@@ -1,12 +1,12 @@
 package com.alazar.aggregator.screen;
 
 import com.alazar.aggregator.base.MvpContract;
-import com.alazar.aggregator.rss.RssCallback;
+import com.alazar.aggregator.base.NewsListCallback;
 
 public interface FeedMvpContract {
 
     interface Presenter<V extends MvpContract.View> extends MvpContract.Presenter<V> {
-        void getFeed(RssCallback callback);
+        void getFeed(NewsListCallback callback);
     }
 
     interface View extends MvpContract.View {

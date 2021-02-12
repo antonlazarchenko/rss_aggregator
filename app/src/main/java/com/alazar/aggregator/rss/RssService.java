@@ -4,6 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.alazar.aggregator.base.ContentProvider;
+import com.alazar.aggregator.base.NewsListCallback;
 import com.alazar.aggregator.model.NewsItem;
 import com.alazar.aggregator.rss.model.RssFeed;
 import com.alazar.aggregator.rss.model.RssItem;
@@ -63,12 +65,12 @@ public class RssService implements ContentProvider {
             new ArrayList<>(Arrays.asList(
                 "https://habr.com/ru/rss/best/daily/?fl=ru/feed",
                 "https://lifehacker.com/rss",
-                "https://feeds.megaphone.fm/ADL9840290619"
+                "https://dou.ua/lenta/tags/RSS/feed/"
             )));
     }
 
 
-    public void getFeed(RssCallback callback) {
+    public void getFeed(NewsListCallback callback) {
         newsList = new CopyOnWriteArrayList<>();
 
         getSourcesUrl().subscribeOn(Schedulers.io())
@@ -87,7 +89,7 @@ public class RssService implements ContentProvider {
         }
     }
 
-    public void runRssFeed(RssCallback callback) {
+    public void runRssFeed(NewsListCallback callback) {
 
         Call<RssFeed> callAsync = rssService.getFeedCall();
         ArrayList<NewsItem> newsList = new ArrayList<>();

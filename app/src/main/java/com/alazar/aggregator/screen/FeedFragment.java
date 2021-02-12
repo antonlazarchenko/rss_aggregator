@@ -28,8 +28,12 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
     private SwipeRefreshLayout swipeRefresh;
 
+    private int scrollPosition = 0;
+
     @Inject
     FeedMvpContract.Presenter<FeedMvpContract.View> presenter;
+
+    private RecyclerView recyclerView;
 
     public FeedFragment() {
     }
@@ -49,7 +53,7 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
         showProgressBar();
 
-        RecyclerView recyclerView = binding.recyclerView;
+        recyclerView = binding.recyclerView;
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -72,12 +76,16 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
             hideProgressBar();
             swipeRefresh.setRefreshing(false);
             adapter.setItems(news);
+
+            recyclerView.scrollToPosition(scrollPosition);
         });
     }
 
 
     @Override
     public void recyclerViewListClicked(String link, View v, int position) {
+
+        scrollPosition = position;
 
         Fragment fragment = new BrowserFragment();
 
@@ -90,6 +98,16 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
             .replace(R.id.frame_layout, fragment)
             .addToBackStack("feed")
             .commit();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 
     @Override

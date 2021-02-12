@@ -1,11 +1,22 @@
 package com.alazar.aggregator.model;
 
-public class NewsItem {
+import com.tickaroo.tikxml.converter.htmlescape.StringEscapeUtils;
 
-    private final String title;
-    private final String date;
-    private final String link;
-    private final String description;
+import io.realm.RealmObject;
+import io.realm.annotations.Required;
+
+public class NewsItem extends RealmObject {
+
+    @Required
+    private String title;
+    @Required
+    private String date;
+    @Required
+    private String link;
+    @Required
+    private String description;
+
+    public NewsItem() {}
 
     public NewsItem(String title, String date, String link, String description) {
         this.title = title;
@@ -14,8 +25,16 @@ public class NewsItem {
         this.description = description;
     }
 
+
+    public void setData(NewsItem item) {
+        title = item.getTitle();
+        date = item.getDate();
+        link = item.getLink();
+        description = item.getDescription();
+    }
+
     public String getTitle() {
-        return title;
+        return title.trim();
     }
 
     public String getDescription() {
@@ -24,7 +43,7 @@ public class NewsItem {
 
     public String getShortDescription() {
 
-        String shortDesc = description;
+        String shortDesc = StringEscapeUtils.unescapeHtml4(description);
         shortDesc = shortDesc.replaceAll("<(.*?)>", " ");
         shortDesc = shortDesc.replaceAll("<(.*?)\n", " ");
         shortDesc = shortDesc.replaceFirst("(.*?)>", " ");

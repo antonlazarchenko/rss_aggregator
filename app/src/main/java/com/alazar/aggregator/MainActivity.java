@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 
 import com.alazar.aggregator.databinding.ActivityMainBinding;
 import com.alazar.aggregator.screen.FeedFragment;
+import com.alazar.aggregator.util.NetworkWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,12 @@ public class MainActivity extends AppCompatActivity {
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        checkAndRequestPermissions(Manifest.permission.INTERNET);
+        checkAndRequestPermissions(Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.CHANGE_NETWORK_STATE
+        );
+
+        NetworkWrapper.getInstance().requestEnableInternet();
 
         getSupportFragmentManager()
             .beginTransaction()

@@ -1,6 +1,8 @@
 package com.alazar.aggregator.di;
 
+import com.alazar.aggregator.db.DbHandler;
 import com.alazar.aggregator.screen.FeedFragment;
+import com.alazar.aggregator.util.NetworkWrapper;
 
 import javax.inject.Singleton;
 
@@ -15,4 +17,6 @@ import dagger.Component;
 )
 public interface AppComponent {
     void inject(FeedFragment fragment);
+    void inject(DbHandler db);
+    void inject(NetworkWrapper wrapper);
 }

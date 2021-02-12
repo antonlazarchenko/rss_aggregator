@@ -2,6 +2,7 @@ package com.alazar.aggregator.screen;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,18 +26,27 @@ public class BrowserFragment extends Fragment {
     }
 
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         FragmentBrowserBinding binding = FragmentBrowserBinding.inflate(inflater, container, false);
 
         Bundle bundle = requireArguments();
+        String link = bundle.getString("link");
 
         WebView webView = binding.webView;
-        webView.setWebViewClient(new WebViewClient());
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl(bundle.getString("link"));
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                Log.d("", "onPageFinished");
+            }
+        });
+
+        webView.loadUrl(link);
 
         return binding.getRoot();
     }
