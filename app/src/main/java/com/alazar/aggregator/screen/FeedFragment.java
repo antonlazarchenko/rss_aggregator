@@ -1,6 +1,12 @@
 package com.alazar.aggregator.screen;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +22,8 @@ import com.alazar.aggregator.adapter.NewsAdapter;
 import com.alazar.aggregator.adapter.RecyclerViewClickListener;
 import com.alazar.aggregator.databinding.FragmentFeedBinding;
 import com.alazar.aggregator.di.App;
+import com.alazar.aggregator.util.Networker;
+import com.alazar.aggregator.util.Toaster;
 
 import javax.inject.Inject;
 
@@ -63,27 +71,39 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
         swipeRefresh = binding.swipeRefresh;
         swipeRefresh.setColorSchemeResources(R.color.purple_500);
-        swipeRefresh.setOnRefreshListener(this::updateContent);
+        swipeRefresh.setOnRefreshListener(() -> {
+            if (!Networker.getInstance().isConnected()) {
+                Toaster.getInstance().makeText(R.string.internet_unavaiable);
+                swipeRefresh.setRefreshing(false);
+                return;
+            }
+            presenter.callFeed();
+        });
 
-        updateContent();
+        presenter.getNewsFeed().observe(requireActivity(),
+            news -> {
+                System.out.println(news);
+                adapter.setItems(news);
+
+                hideProgressBar();
+                swipeRefresh.setRefreshing(false);
+
+                recyclerView.scrollToPosition(scrollPosition);
+            });
+
+        presenter.callFeed();
 
         return binding.getRoot();
     }
 
 
-    public void updateContent() {
-        presenter.getFeed(news -> {
-            hideProgressBar();
-            swipeRefresh.setRefreshing(false);
-            adapter.setItems(news);
-
-            recyclerView.scrollToPosition(scrollPosition);
-        });
-    }
-
-
     @Override
     public void recyclerViewListClicked(String link, View v, int position) {
+
+        if (!Networker.getInstance().isConnected()) {
+            Toaster.getInstance().makeText(R.string.internet_unavaiable);
+            return;
+        }
 
         scrollPosition = position;
 
@@ -100,14 +120,32 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
             .commit();
     }
 
+
+    private final BroadcastReceiver networkChangeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("FeedFragment", "Network state changed");
+            if (Networker.getInstance().isConnected()) {
+                showProgressBar();
+
+                adapter.clearItems();
+                presenter.callFeed();
+            }
+        }
+    };
+
     @Override
     public void onResume() {
         super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        requireActivity().registerReceiver(networkChangeReceiver, intentFilter);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        requireActivity().unregisterReceiver(networkChangeReceiver);
     }
 
     @Override

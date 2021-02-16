@@ -1,10 +1,17 @@
 package com.alazar.aggregator.screen;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.alazar.aggregator.R;
 import com.alazar.aggregator.base.ContentProvider;
 import com.alazar.aggregator.base.DbProvider;
 import com.alazar.aggregator.base.NewsListCallback;
-import com.alazar.aggregator.db.DbHandler;
-import com.alazar.aggregator.util.NetworkWrapper;
+import com.alazar.aggregator.model.NewsItem;
+import com.alazar.aggregator.util.Networker;
+import com.alazar.aggregator.util.Toaster;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -12,9 +19,11 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private FeedMvpContract.View view;
 
-    private ContentProvider contentProvider;
+    private final ContentProvider contentProvider;
 
-    private DbProvider dbProvider;
+    private final DbProvider dbProvider;
+
+    private MutableLiveData<List<NewsItem>> mutableList = new MutableLiveData<List<NewsItem>>();
 
     @Inject
     public FeedPresenter(ContentProvider contentProvider, DbProvider dbProvider) {
@@ -22,16 +31,21 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
         this.dbProvider = dbProvider;
     }
 
+    public LiveData<List<NewsItem>> getNewsFeed() {
+        return mutableList;
+    }
+
 
     @Override
-    public void getFeed(NewsListCallback callback) {
-        if (NetworkWrapper.getInstance().isConnected()) {
+    public void callFeed() {
+        if (Networker.getInstance().isConnected()) {
             contentProvider.getFeed(news -> {
                 dbProvider.saveFreshNewsList(news);
-                callback.onReady(news);
+                mutableList.postValue(news);
             });
         } else {
-            dbProvider.findAllNewsItems(callback);
+            Toaster.getInstance().makeText(R.string.no_internet_cache_loaded);
+            dbProvider.findAllNewsItems(newsList -> mutableList.postValue(newsList));
         }
     }
 

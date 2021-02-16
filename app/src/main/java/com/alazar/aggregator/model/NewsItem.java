@@ -34,7 +34,7 @@ public class NewsItem extends RealmObject {
     }
 
     public String getTitle() {
-        return title.trim();
+        return title;
     }
 
     public String getDescription() {

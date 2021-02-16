@@ -1,16 +1,19 @@
 package com.alazar.aggregator;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.alazar.aggregator.databinding.ActivityMainBinding;
 import com.alazar.aggregator.screen.FeedFragment;
-import com.alazar.aggregator.util.NetworkWrapper;
+import com.alazar.aggregator.util.Networker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +31,27 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.CHANGE_NETWORK_STATE
         );
 
-        NetworkWrapper.getInstance().requestEnableInternet();
+        requestEnableInternet();
 
         getSupportFragmentManager()
             .beginTransaction()
             .replace(binding.frameLayout.getId(), new FeedFragment())
             .commit();
+    }
+
+    private void requestEnableInternet() {
+
+        if (!Networker.getInstance().isConnected()) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setMessage(R.string.request_enable_wifi)
+                .setPositiveButton(R.string.enable,
+                    (dialog, id) -> startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)));
+
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
     }
 
 
