@@ -59,8 +59,6 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
         App.getComponent().inject(this);
         presenter.attachView(this);
 
-        showProgressBar();
-
         recyclerView = binding.recyclerView;
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -85,6 +83,7 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
                 System.out.println(news);
                 adapter.setItems(news);
 
+                binding.splash.setVisibility(View.INVISIBLE);
                 hideProgressBar();
                 swipeRefresh.setRefreshing(false);
 

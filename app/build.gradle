@@ -87,4 +87,7 @@ dependencies {
     // webKit
     implementation "androidx.webkit:webkit:1.4.0"
 
+    // gif
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.19'
+
 }
