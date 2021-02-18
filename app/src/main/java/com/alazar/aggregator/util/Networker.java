@@ -16,26 +16,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.alazar.aggregator.R;
+import com.alazar.aggregator.base.NetworkProvider;
 import com.alazar.aggregator.di.App;
 
 import javax.inject.Inject;
 
-public class Networker {
+public class Networker implements NetworkProvider {
     @Inject
     Context context;
 
     private final ConnectivityManager connectivityManager;
 
-    private static Networker instance;
-
-    public static Networker getInstance() {
-        if (instance == null) {
-            instance = new Networker();
-        }
-        return instance;
-    }
-
-    protected Networker() {
+    @Inject
+    public Networker() {
         App.getComponent().inject(this);
         connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }

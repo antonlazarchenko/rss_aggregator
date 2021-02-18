@@ -20,10 +20,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.alazar.aggregator.R;
 import com.alazar.aggregator.adapter.NewsAdapter;
 import com.alazar.aggregator.adapter.RecyclerViewClickListener;
+import com.alazar.aggregator.base.NetworkProvider;
+import com.alazar.aggregator.base.ToastProvider;
 import com.alazar.aggregator.databinding.FragmentFeedBinding;
 import com.alazar.aggregator.di.App;
-import com.alazar.aggregator.util.Networker;
-import com.alazar.aggregator.util.Toaster;
 
 import javax.inject.Inject;
 
@@ -34,12 +34,15 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
     private NewsAdapter adapter;
 
-    private SwipeRefreshLayout swipeRefresh;
-
     private int scrollPosition = 0;
 
     @Inject
     FeedMvpContract.Presenter<FeedMvpContract.View> presenter;
+
+    @Inject
+    NetworkProvider networkProvider;
+    @Inject
+    ToastProvider toastProvider;
 
     private RecyclerView recyclerView;
 
@@ -59,20 +62,13 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
         App.getComponent().inject(this);
         presenter.attachView(this);
 
-        recyclerView = binding.recyclerView;
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        initRecyclerView();
 
-        adapter = new NewsAdapter(this);
-        recyclerView.setAdapter(adapter);
-
-        swipeRefresh = binding.swipeRefresh;
-        swipeRefresh.setColorSchemeResources(R.color.purple_500);
-        swipeRefresh.setOnRefreshListener(() -> {
-            if (!Networker.getInstance().isConnected()) {
-                Toaster.getInstance().makeText(R.string.internet_unavaiable);
-                swipeRefresh.setRefreshing(false);
+        binding.swipeRefresh.setColorSchemeResources(R.color.purple_500);
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            if (!networkProvider.isConnected()) {
+                toastProvider.makeText(R.string.internet_unavaiable);
+                binding.swipeRefresh.setRefreshing(false);
                 return;
             }
             presenter.callFeed();
@@ -80,12 +76,11 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
         presenter.getNewsFeed().observe(requireActivity(),
             news -> {
-                System.out.println(news);
                 adapter.setItems(news);
 
                 binding.splash.setVisibility(View.INVISIBLE);
                 hideProgressBar();
-                swipeRefresh.setRefreshing(false);
+                binding.swipeRefresh.setRefreshing(false);
 
                 recyclerView.scrollToPosition(scrollPosition);
             });
@@ -95,12 +90,22 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
         return binding.getRoot();
     }
 
+    private void initRecyclerView() {
+        recyclerView = binding.recyclerView;
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        adapter = new NewsAdapter(this);
+        recyclerView.setAdapter(adapter);
+    }
+
 
     @Override
     public void recyclerViewListClicked(String link, View v, int position) {
 
-        if (!Networker.getInstance().isConnected()) {
-            Toaster.getInstance().makeText(R.string.internet_unavaiable);
+        if (!networkProvider.isConnected()) {
+            toastProvider.makeText(R.string.internet_unavaiable);
             return;
         }
 
@@ -124,7 +129,7 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("FeedFragment", "Network state changed");
-            if (Networker.getInstance().isConnected()) {
+            if (networkProvider.isConnected()) {
                 showProgressBar();
 
                 adapter.clearItems();

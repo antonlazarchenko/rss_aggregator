@@ -6,10 +6,11 @@ import androidx.lifecycle.MutableLiveData;
 import com.alazar.aggregator.R;
 import com.alazar.aggregator.base.ContentProvider;
 import com.alazar.aggregator.base.DbProvider;
+import com.alazar.aggregator.base.NetworkProvider;
 import com.alazar.aggregator.base.NewsListCallback;
+import com.alazar.aggregator.base.ToastProvider;
+import com.alazar.aggregator.di.App;
 import com.alazar.aggregator.model.NewsItem;
-import com.alazar.aggregator.util.Networker;
-import com.alazar.aggregator.util.Toaster;
 
 import java.util.List;
 
@@ -23,12 +24,18 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private final DbProvider dbProvider;
 
+    @Inject
+    NetworkProvider networkProvider;
+    @Inject
+    ToastProvider toastProvider;
+
     private MutableLiveData<List<NewsItem>> mutableList = new MutableLiveData<List<NewsItem>>();
 
     @Inject
     public FeedPresenter(ContentProvider contentProvider, DbProvider dbProvider) {
         this.contentProvider = contentProvider;
         this.dbProvider = dbProvider;
+        App.getComponent().inject(this);
     }
 
     public LiveData<List<NewsItem>> getNewsFeed() {
@@ -38,13 +45,13 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     @Override
     public void callFeed() {
-        if (Networker.getInstance().isConnected()) {
+        if (networkProvider.isConnected()) {
             contentProvider.getFeed(news -> {
                 dbProvider.saveFreshNewsList(news);
                 mutableList.postValue(news);
             });
         } else {
-            Toaster.getInstance().makeText(R.string.no_internet_cache_loaded);
+            toastProvider.makeText(R.string.no_internet_cache_loaded);
             dbProvider.findAllNewsItems(newsList -> mutableList.postValue(newsList));
         }
     }

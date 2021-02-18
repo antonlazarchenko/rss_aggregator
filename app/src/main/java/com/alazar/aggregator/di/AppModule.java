@@ -18,18 +18,6 @@ import dagger.Provides;
 @Module
 public class AppModule {
 
-    private final Application application;
-
-    AppModule(Application application) {
-        this.application = application;
-    }
-
-    @Provides
-    public Context provideContext() {
-        return application.getApplicationContext();
-    }
-
-    
     @Provides
     public FeedMvpContract.View provideFeedFragment() {
         return new FeedFragment();

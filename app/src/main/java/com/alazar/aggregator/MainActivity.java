@@ -11,20 +11,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.alazar.aggregator.base.NetworkProvider;
 import com.alazar.aggregator.databinding.ActivityMainBinding;
+import com.alazar.aggregator.di.App;
 import com.alazar.aggregator.screen.FeedFragment;
-import com.alazar.aggregator.util.Networker;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class MainActivity extends AppCompatActivity {
+
+    @Inject
+    NetworkProvider networkProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        App.getComponent().inject(this);
 
         checkAndRequestPermissions(Manifest.permission.INTERNET,
             Manifest.permission.ACCESS_NETWORK_STATE,
@@ -41,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestEnableInternet() {
 
-        if (!Networker.getInstance().isConnected()) {
+        if (!networkProvider.isConnected()) {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
