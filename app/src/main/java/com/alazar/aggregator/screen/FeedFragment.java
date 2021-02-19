@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -111,17 +115,26 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
         scrollPosition = position;
 
-        Fragment fragment = new BrowserFragment();
+        launchCustomTab(link);
+    }
 
-        Bundle bundle = new Bundle();
-        bundle.putString("link", link);
-        fragment.setArguments(bundle);
 
-        requireActivity().getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.frame_layout, fragment)
-            .addToBackStack("feed")
-            .commit();
+    private void launchCustomTab(String url) {
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+
+        builder.setStartAnimations(requireActivity(), R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+        builder.setExitAnimations(requireActivity(), android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+
+        CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+            .setNavigationBarColor(ContextCompat.getColor(requireActivity(), R.color.purple_700))
+            .setToolbarColor(ContextCompat.getColor(requireActivity(), R.color.purple_700))
+            .setSecondaryToolbarColor(ContextCompat.getColor(requireActivity(), R.color.purple_500))
+            .build();
+        builder.setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_LIGHT, params);
+
+        CustomTabsIntent customTabsIntent = builder.build();
+
+        customTabsIntent.launchUrl(requireActivity(), Uri.parse(url));
     }
 
 
