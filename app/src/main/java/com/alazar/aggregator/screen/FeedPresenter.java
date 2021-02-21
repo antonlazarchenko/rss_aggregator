@@ -46,7 +46,7 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
             });
         } else {
             toastProvider.makeText(R.string.no_internet_cache_loaded);
-            dbProvider.findAllNewsItems(newsList -> callback.onReady(newsList));
+            dbProvider.findAllNewsItems(callback);
         }
     }
 
