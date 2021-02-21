@@ -24,6 +24,8 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private final DbProvider dbProvider;
 
+    private boolean loadedFreshResult = false;
+
     @Inject
     NetworkProvider networkProvider;
     @Inject
@@ -38,10 +40,13 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
 
     @Override
-    public void getFeed(NewsListCallback callback) {
-        if (networkProvider.isConnected()) {
+    public void getFeed(boolean updateRequired, NewsListCallback callback) {
+        if (networkProvider.isConnected()
+            && (updateRequired || !loadedFreshResult)) {
+
             contentProvider.getFeed(news -> {
                 dbProvider.saveFreshNewsList(news);
+                loadedFreshResult = true;
                 callback.onReady(news);
             });
         } else {

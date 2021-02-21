@@ -1,6 +1,5 @@
 package com.alazar.aggregator.di;
 
-import com.alazar.aggregator.MainActivity;
 import com.alazar.aggregator.db.DbHandler;
 import com.alazar.aggregator.screen.FeedFragment;
 import com.alazar.aggregator.screen.FeedPresenter;
@@ -20,7 +19,6 @@ import dagger.Component;
     }
 )
 public interface AppComponent {
-    void inject(MainActivity activity);
     void inject(FeedFragment fragment);
     void inject(FeedPresenter presenter);
     void inject(DbHandler db);

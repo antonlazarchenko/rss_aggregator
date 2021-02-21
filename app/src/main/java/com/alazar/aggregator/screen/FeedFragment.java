@@ -7,12 +7,14 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
@@ -37,8 +39,6 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
     private NewsAdapter adapter;
 
-    private int scrollPosition = 0;
-
     @Inject
     FeedMvpContract.Presenter<FeedMvpContract.View> presenter;
 
@@ -47,8 +47,6 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
     @Inject
     ToastProvider toastProvider;
 
-    private RecyclerView recyclerView;
-
     public FeedFragment() {
     }
 
@@ -56,6 +54,10 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        requireActivity().registerReceiver(networkChangeReceiver, intentFilter);
     }
 
     @Override
@@ -73,29 +75,30 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
                 toastProvider.makeText(R.string.internet_unavaiable);
                 binding.swipeRefresh.setRefreshing(false);
             } else {
-                showFeed();
+                showFeed(true);
             }
         });
 
-        showFeed();
+        showFeed(false);
 
         return binding.getRoot();
     }
 
-    private void showFeed() {
-        presenter.getFeed(newsList -> {
+    private void showFeed(boolean updateRequired) {
+        presenter.getFeed(updateRequired, newsList -> {
+
+            if (newsList.size() == 0) requestEnableInternet();
+
             adapter.setItems(newsList);
 
             binding.splash.setVisibility(View.INVISIBLE);
             hideProgressBar();
             binding.swipeRefresh.setRefreshing(false);
-
-            recyclerView.scrollToPosition(scrollPosition);
         });
     }
 
     private void initRecyclerView() {
-        recyclerView = binding.recyclerView;
+        RecyclerView recyclerView = binding.recyclerView;
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -112,8 +115,6 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
             toastProvider.makeText(R.string.internet_unavaiable);
             return;
         }
-
-        scrollPosition = position;
 
         launchCustomTab(link);
     }
@@ -146,23 +147,34 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
                 showProgressBar();
 
                 adapter.clearItems();
-                showFeed();
+                showFeed(true);
             }
         }
     };
 
+    private void requestEnableInternet() {
+
+        if (!networkProvider.isConnected()) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+
+            builder.setMessage(R.string.request_enable_wifi)
+                .setPositiveButton(R.string.enable,
+                    (dialog, id) -> startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)));
+
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        requireActivity().registerReceiver(networkChangeReceiver, intentFilter);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        requireActivity().unregisterReceiver(networkChangeReceiver);
     }
 
     @Override
@@ -178,6 +190,7 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        requireActivity().unregisterReceiver(networkChangeReceiver);
         binding = null;
         presenter.detachView();
     }
