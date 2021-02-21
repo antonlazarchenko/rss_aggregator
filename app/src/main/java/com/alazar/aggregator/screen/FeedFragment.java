@@ -110,12 +110,6 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
 
     @Override
     public void recyclerViewListClicked(String link, View v, int position) {
-
-        if (!networkProvider.isConnected()) {
-            toastProvider.makeText(R.string.internet_unavaiable);
-            return;
-        }
-
         launchCustomTab(link);
     }
 
