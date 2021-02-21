@@ -29,8 +29,6 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
     @Inject
     ToastProvider toastProvider;
 
-    private MutableLiveData<List<NewsItem>> mutableList = new MutableLiveData<List<NewsItem>>();
-
     @Inject
     public FeedPresenter(ContentProvider contentProvider, DbProvider dbProvider) {
         this.contentProvider = contentProvider;
@@ -38,21 +36,17 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
         App.getComponent().inject(this);
     }
 
-    public LiveData<List<NewsItem>> getNewsFeed() {
-        return mutableList;
-    }
-
 
     @Override
-    public void callFeed() {
+    public void getFeed(NewsListCallback callback) {
         if (networkProvider.isConnected()) {
             contentProvider.getFeed(news -> {
                 dbProvider.saveFreshNewsList(news);
-                mutableList.postValue(news);
+                callback.onReady(news);
             });
         } else {
             toastProvider.makeText(R.string.no_internet_cache_loaded);
-            dbProvider.findAllNewsItems(newsList -> mutableList.postValue(newsList));
+            dbProvider.findAllNewsItems(newsList -> callback.onReady(newsList));
         }
     }
 

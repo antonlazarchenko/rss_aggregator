@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.alazar.aggregator.R;
 import com.alazar.aggregator.adapter.NewsAdapter;
@@ -73,25 +72,26 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
             if (!networkProvider.isConnected()) {
                 toastProvider.makeText(R.string.internet_unavaiable);
                 binding.swipeRefresh.setRefreshing(false);
-                return;
+            } else {
+                showFeed();
             }
-            presenter.callFeed();
         });
 
-        presenter.getNewsFeed().observe(requireActivity(),
-            news -> {
-                adapter.setItems(news);
-
-                binding.splash.setVisibility(View.INVISIBLE);
-                hideProgressBar();
-                binding.swipeRefresh.setRefreshing(false);
-
-                recyclerView.scrollToPosition(scrollPosition);
-            });
-
-        presenter.callFeed();
+        showFeed();
 
         return binding.getRoot();
+    }
+
+    private void showFeed() {
+        presenter.getFeed(newsList -> {
+            adapter.setItems(newsList);
+
+            binding.splash.setVisibility(View.INVISIBLE);
+            hideProgressBar();
+            binding.swipeRefresh.setRefreshing(false);
+
+            recyclerView.scrollToPosition(scrollPosition);
+        });
     }
 
     private void initRecyclerView() {
@@ -146,7 +146,7 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
                 showProgressBar();
 
                 adapter.clearItems();
-                presenter.callFeed();
+                showFeed();
             }
         }
     };
