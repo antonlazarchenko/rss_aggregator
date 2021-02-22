@@ -1,10 +1,7 @@
 package com.alazar.aggregator.di;
 
 
-import android.app.Application;
-import android.content.Context;
-
-import com.alazar.aggregator.base.ContentProvider;
+import com.alazar.aggregator.base.FeedProvider;
 import com.alazar.aggregator.base.DbProvider;
 import com.alazar.aggregator.db.DbHandler;
 import com.alazar.aggregator.rss.RssService;
@@ -25,14 +22,14 @@ public class AppModule {
 
     @Provides
     public FeedMvpContract.Presenter<FeedMvpContract.View> provideFeedPresenter(
-        ContentProvider provider,
+        FeedProvider provider,
         DbProvider dbProvider
     ) {
         return new FeedPresenter(provider, dbProvider);
     }
 
     @Provides
-    public ContentProvider providesContent() {
+    public FeedProvider providesContent() {
         return new RssService();
     }
 

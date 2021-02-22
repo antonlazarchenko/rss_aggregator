@@ -1,5 +1,5 @@
 package com.alazar.aggregator.base;
 
-public interface ContentProvider {
+public interface FeedProvider {
     void getFeed(NewsListCallback callback);
 }

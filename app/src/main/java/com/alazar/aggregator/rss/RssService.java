@@ -4,7 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.alazar.aggregator.base.ContentProvider;
+import com.alazar.aggregator.base.FeedProvider;
 import com.alazar.aggregator.base.NewsListCallback;
 import com.alazar.aggregator.model.NewsItem;
 import com.alazar.aggregator.rss.model.RssFeed;
@@ -29,7 +29,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 
-public class RssService implements ContentProvider {
+public class RssService implements FeedProvider {
 
     private static final String TAG = "FeedPresenter";
 

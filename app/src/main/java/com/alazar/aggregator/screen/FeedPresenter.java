@@ -1,17 +1,11 @@
 package com.alazar.aggregator.screen;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
 import com.alazar.aggregator.R;
-import com.alazar.aggregator.base.ContentProvider;
+import com.alazar.aggregator.base.FeedProvider;
 import com.alazar.aggregator.base.DbProvider;
 import com.alazar.aggregator.base.NetworkProvider;
 import com.alazar.aggregator.base.ToastProvider;
 import com.alazar.aggregator.di.App;
-import com.alazar.aggregator.model.NewsItem;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -19,7 +13,7 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private FeedMvpContract.View view;
 
-    private final ContentProvider contentProvider;
+    private final FeedProvider feedProvider;
 
     private final DbProvider dbProvider;
 
@@ -31,8 +25,8 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
     ToastProvider toastProvider;
 
     @Inject
-    public FeedPresenter(ContentProvider contentProvider, DbProvider dbProvider) {
-        this.contentProvider = contentProvider;
+    public FeedPresenter(FeedProvider feedProvider, DbProvider dbProvider) {
+        this.feedProvider = feedProvider;
         this.dbProvider = dbProvider;
         App.getComponent().inject(this);
     }
@@ -43,7 +37,7 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
         if (networkProvider.isConnected()
             && (updateRequired || !loadedFreshResult)) {
 
-            contentProvider.getFeed(news -> {
+            feedProvider.getFeed(news -> {
                 dbProvider.saveFreshNewsList(news);
                 loadedFreshResult = true;
                 view.showFeed(news);
