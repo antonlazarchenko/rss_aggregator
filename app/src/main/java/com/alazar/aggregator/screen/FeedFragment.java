@@ -29,6 +29,9 @@ import com.alazar.aggregator.base.NetworkProvider;
 import com.alazar.aggregator.base.ToastProvider;
 import com.alazar.aggregator.databinding.FragmentFeedBinding;
 import com.alazar.aggregator.di.App;
+import com.alazar.aggregator.model.NewsItem;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -75,26 +78,25 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
                 toastProvider.makeText(R.string.internet_unavaiable);
                 binding.swipeRefresh.setRefreshing(false);
             } else {
-                showFeed(true);
+                presenter.getFeed(true);
             }
         });
 
-        showFeed(false);
+        presenter.getFeed(false);
 
         return binding.getRoot();
     }
 
-    private void showFeed(boolean updateRequired) {
-        presenter.getFeed(updateRequired, newsList -> {
+    @Override
+    public void showFeed(List<NewsItem> newsList) {
 
-            if (newsList.size() == 0) requestEnableInternet();
+        if (newsList.size() == 0) requestEnableInternet();
 
-            adapter.setItems(newsList);
+        adapter.setItems(newsList);
 
-            binding.splash.setVisibility(View.INVISIBLE);
-            hideProgressBar();
-            binding.swipeRefresh.setRefreshing(false);
-        });
+        binding.splash.setVisibility(View.INVISIBLE);
+        hideProgressBar();
+        binding.swipeRefresh.setRefreshing(false);
     }
 
     private void initRecyclerView() {
@@ -141,7 +143,7 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
                 showProgressBar();
 
                 adapter.clearItems();
-                showFeed(true);
+                presenter.getFeed(true);
             }
         }
     };

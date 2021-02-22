@@ -7,7 +7,6 @@ import com.alazar.aggregator.R;
 import com.alazar.aggregator.base.ContentProvider;
 import com.alazar.aggregator.base.DbProvider;
 import com.alazar.aggregator.base.NetworkProvider;
-import com.alazar.aggregator.base.NewsListCallback;
 import com.alazar.aggregator.base.ToastProvider;
 import com.alazar.aggregator.di.App;
 import com.alazar.aggregator.model.NewsItem;
@@ -40,18 +39,20 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
 
     @Override
-    public void getFeed(boolean updateRequired, NewsListCallback callback) {
+    public void getFeed(boolean updateRequired) {
         if (networkProvider.isConnected()
             && (updateRequired || !loadedFreshResult)) {
 
             contentProvider.getFeed(news -> {
                 dbProvider.saveFreshNewsList(news);
                 loadedFreshResult = true;
-                callback.onReady(news);
+                view.showFeed(news);
             });
         } else {
             toastProvider.makeText(R.string.no_internet_cache_loaded);
-            dbProvider.findAllNewsItems(callback);
+            dbProvider.findAllNewsItems(newsList -> {
+                view.showFeed(newsList);
+            });
         }
     }
 
