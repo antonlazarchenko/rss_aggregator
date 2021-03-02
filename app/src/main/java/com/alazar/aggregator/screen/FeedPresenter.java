@@ -16,10 +16,6 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
 
     private FeedMvpContract.View view;
 
-    private final FeedProvider feedProvider;
-
-    private final DbProvider dbProvider;
-
     private boolean loadedFreshResult = false;
 
     @Inject
@@ -28,9 +24,12 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
     ToastProvider toastProvider;
 
     @Inject
-    public FeedPresenter(FeedProvider feedProvider, DbProvider dbProvider) {
-        this.feedProvider = feedProvider;
-        this.dbProvider = dbProvider;
+    FeedProvider feedProvider;
+    @Inject
+    DbProvider dbProvider;
+
+    @Inject
+    public FeedPresenter() {
         App.getComponent().inject(this);
     }
 

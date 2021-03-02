@@ -19,7 +19,7 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
-public class DbHandler implements DbProvider {
+public class DbProviderImpl implements DbProvider {
 
     private static final String TAG = "DbHandler";
 
@@ -32,7 +32,8 @@ public class DbHandler implements DbProvider {
     @Inject
     Context context;
 
-    public DbHandler() {
+    @Inject
+    public DbProviderImpl() {
         App.getComponent().inject(this);
 
         Realm.init(context);

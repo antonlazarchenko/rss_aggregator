@@ -1,6 +1,6 @@
 package com.alazar.aggregator.di;
 
-import com.alazar.aggregator.db.DbHandler;
+import com.alazar.aggregator.db.DbProviderImpl;
 import com.alazar.aggregator.screen.FeedFragment;
 import com.alazar.aggregator.screen.FeedPresenter;
 import com.alazar.aggregator.util.Networker;
@@ -21,7 +21,7 @@ import dagger.Component;
 public interface AppComponent {
     void inject(FeedFragment fragment);
     void inject(FeedPresenter presenter);
-    void inject(DbHandler db);
+    void inject(DbProviderImpl db);
     void inject(Networker wrapper);
     void inject(Toaster toaster);
 }

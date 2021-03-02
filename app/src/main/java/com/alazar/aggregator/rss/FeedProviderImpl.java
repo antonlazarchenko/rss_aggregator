@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.inject.Inject;
+
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
@@ -21,7 +23,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 
-public class RssService implements FeedProvider {
+public class FeedProviderImpl implements FeedProvider {
 
     private static final String TAG = "FeedPresenter";
 
@@ -29,7 +31,8 @@ public class RssService implements FeedProvider {
 
     private List<NewsItem> newsList;
 
-    public RssService() {
+    @Inject
+    public FeedProviderImpl() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor()
             .setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
