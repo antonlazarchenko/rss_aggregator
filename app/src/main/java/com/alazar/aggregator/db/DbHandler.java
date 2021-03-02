@@ -1,11 +1,11 @@
 package com.alazar.aggregator.db;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.alazar.aggregator.base.DbProvider;
 import com.alazar.aggregator.di.App;
 import com.alazar.aggregator.model.NewsItem;
-import com.alazar.aggregator.base.NewsListCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,8 @@ import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
 public class DbHandler implements DbProvider {
+
+    private static final String TAG = "DbHandler";
 
     private static final String FEED_NAME = "newsfeed.realm";
 
@@ -43,44 +45,49 @@ public class DbHandler implements DbProvider {
     }
 
 
-    public void findAllNewsItems(NewsListCallback callback) {
+    @Override
+    public List<NewsItem> findAllNewsItems() {
 
         if (newsList.size() == 0) {
             Realm realm = Realm.getInstance(realmConfig);
-            RealmResults<NewsItem> realmResults = realm.where(NewsItem.class).findAll();
+            RealmResults<NewsItem> realmResults = realm.where(NewsItem.class).findAllAsync();
             newsList.addAll(realmResults);
          }
 
-        callback.onReady(newsList);
+        return newsList;
     }
 
+    @Override
     public void saveFreshNewsList(List<NewsItem> list) {
         if (newsList.size() > 0)
             newsList.clear();
 
         newsList.addAll(list);
 
-        deleteAllFeeds();
+        deleteAllFeeds().subscribeOn(Schedulers.io())
+            .map(__ ->
+                Observable.fromIterable(list)
+                .subscribe(newsItem -> {
+                    Realm realm = Realm.getInstance(realmConfig);
+                    realm.beginTransaction();
 
-        Observable.fromIterable(list).subscribeOn(Schedulers.io())
-            .subscribe(newsItem -> {
-                Realm realm = Realm.getInstance(realmConfig);
-                realm.beginTransaction();
-
-                NewsItem item = realm.createObject(NewsItem.class);
-                item.setData(newsItem);
-                realm.commitTransaction();
-                System.out.println("TRANSACTION");
-            }, Throwable::printStackTrace);
+                    NewsItem item = realm.createObject(NewsItem.class);
+                    item.setData(newsItem);
+                    realm.commitTransaction();
+                    Log.d(TAG, "TRANSACTION");
+                }, Throwable::printStackTrace))
+            .subscribe();
     }
 
-    private void deleteAllFeeds() {
-        new Thread(() -> {
+    private Observable<Boolean> deleteAllFeeds() {
+        return Observable.fromCallable(() -> {
             Realm realm = Realm.getInstance(realmConfig);
             realm.beginTransaction();
             realm.deleteAll();
             realm.commitTransaction();
             realm.close();
-        }).start();
+            Log.d(TAG, "CACHE CLEAN");
+            return true;
+        });
     }
 }

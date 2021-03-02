@@ -15,6 +15,8 @@ public interface FeedMvpContract {
 
         void showFeed(List<NewsItem> newsList);
 
+        void registerBroadcastUpdate();
+
         void showProgressBar();
 
         void hideProgressBar();

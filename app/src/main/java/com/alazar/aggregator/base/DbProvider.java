@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface DbProvider {
 
-    void findAllNewsItems(NewsListCallback callback);
+    List<NewsItem> findAllNewsItems();
 
     void saveFreshNewsList(List<NewsItem> list);
 

@@ -2,12 +2,8 @@ package com.alazar.aggregator.rss;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.alazar.aggregator.base.FeedProvider;
-import com.alazar.aggregator.base.NewsListCallback;
 import com.alazar.aggregator.model.NewsItem;
-import com.alazar.aggregator.rss.model.RssFeed;
 import com.alazar.aggregator.rss.model.RssItem;
 import com.tickaroo.tikxml.TikXml;
 import com.tickaroo.tikxml.converter.htmlescape.HtmlEscapeStringConverter;
@@ -18,14 +14,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 
@@ -70,53 +62,20 @@ public class RssService implements FeedProvider {
     }
 
 
-    public void getFeed(NewsListCallback callback) {
+    @Override
+    public Observable<List<NewsItem>> getFeed() {
         newsList = new CopyOnWriteArrayList<>();
 
-        getSourcesUrl().subscribeOn(Schedulers.io())
+        return getSourcesUrl().subscribeOn(Schedulers.io())
             .flatMap(Observable::fromIterable)
-            .flatMap(url -> rssService.getFeed(url).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()))
-            .doFinally(() -> {
-                Log.d(TAG, "NEWS LIST SIZE === " + newsList.size());
-                callback.onReady(newsList);
-            })
-            .subscribe(this::handleResult, Throwable::printStackTrace);
-    }
-
-    private void handleResult(RssFeed rssFeed) {
-        for (RssItem item : rssFeed.channel.item) {
-            newsList.add(new NewsItem(item.getTitle(), item.getDate(), item.getLink(), item.getDescription()));
-        }
-    }
-
-    public void runRssFeed(NewsListCallback callback) {
-
-        Call<RssFeed> callAsync = rssService.getFeedCall();
-        ArrayList<NewsItem> newsList = new ArrayList<>();
-        callAsync.enqueue(new Callback<RssFeed>() {
-            @Override
-            public void onResponse(@NonNull Call<RssFeed> call, @NonNull Response<RssFeed> response) {
-                if (response.isSuccessful()) {
-                    RssFeed apiResponse = response.body();
-
-                    for (RssItem item : apiResponse.channel.item) {
-                        newsList.add(new NewsItem(item.getTitle(), item.getDate(), item.getLink(), item.getDescription()));
-                    }
-                    callback.onReady(newsList);
-
-                } else {
-                    System.out.println("Request Error :: " + response.errorBody());
+            .flatMap(rssService::getFeed)
+            .map(rssFeed -> {
+                for (RssItem item : rssFeed.channel.item) {
+                    newsList.add(new NewsItem(item.getTitle(), item.getDate(), item.getLink(), item.getDescription()));
                 }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<RssFeed> call, @NonNull Throwable t) {
-                if (call.isCanceled()) {
-                    System.out.println("Call was cancelled forcefully");
-                } else {
-                    System.out.println("Network Error :: " + t.getLocalizedMessage());
-                }
-            }
-        });
+                Log.d(TAG, "FEED SIZE: " + newsList.size());
+                return newsList;
+            });
     }
+
 }

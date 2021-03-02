@@ -9,6 +9,9 @@ import com.alazar.aggregator.di.App;
 
 import javax.inject.Inject;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.View> {
 
     private FeedMvpContract.View view;
@@ -37,16 +40,18 @@ public class FeedPresenter implements FeedMvpContract.Presenter<FeedMvpContract.
         if (networkProvider.isConnected()
             && (updateRequired || !loadedFreshResult)) {
 
-            feedProvider.getFeed(news -> {
-                dbProvider.saveFreshNewsList(news);
-                loadedFreshResult = true;
-                view.showFeed(news);
-            });
+            feedProvider.getFeed()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(news -> {
+                    dbProvider.saveFreshNewsList(news);
+                    loadedFreshResult = true;
+                    view.showFeed(news);
+                });
         } else {
             toastProvider.makeText(R.string.no_internet_cache_loaded);
-            dbProvider.findAllNewsItems(newsList -> {
-                view.showFeed(newsList);
-            });
+            view.registerBroadcastUpdate();
+            view.showFeed(dbProvider.findAllNewsItems());
         }
     }
 

@@ -57,10 +57,6 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        requireActivity().registerReceiver(networkChangeReceiver, intentFilter);
     }
 
     @Override
@@ -147,6 +143,13 @@ public class FeedFragment extends Fragment implements FeedMvpContract.View, Recy
             }
         }
     };
+
+    @Override
+    public void registerBroadcastUpdate() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        requireActivity().registerReceiver(networkChangeReceiver, intentFilter);
+    }
 
     private void requestEnableInternet() {
 
